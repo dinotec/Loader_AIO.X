@@ -15,16 +15,24 @@ int main(void) {
     #pragma config LVP = ON
     SYSTEM_Initialize();
     #pragma config LVP = ON
+    // Enable the Global High Interrupts 
+    INTERRUPT_GlobalInterruptHighEnable(); 
+    // Enable the Global Low Interrupts 
+    INTERRUPT_GlobalInterruptLowEnable(); 
 
-//    zlr = IVTBASE;
+    // Disable the Global Low Interrupts 
+    //INTERRUPT_GlobalInterruptLowDisable(); 
+    UART3_Enable();
+    UART3_TransmitEnable();
+    UART3_ReceiveEnable();
     UART3_Init();
     P20_ini();
     eep_ini();
     
     TMR1_Start();
-    test_flash();
-	vek[reg_1].ui = crc;
-    page_cnt = 0;
+//    test_flash();
+//	vek[reg_1].ui = crc;
+//    page_cnt = 0;
     
     while(1) {
         if(++cnt > 1000)
@@ -88,9 +96,10 @@ int main(void) {
 					goto SEND_BLOCK; // wenn Übertragung stehenblebt
 				} else if(cnt > 10)
 					RESET();
-			} else {
-				if(cnt > 10 && !crc) // nach 10 Sek.
-					goto STARTAPP;
+			} else 
+            {
+//				if(cnt > 10 && !crc) // nach 10 Sek.
+//					goto STARTAPP;
 			}
 		}
     }    

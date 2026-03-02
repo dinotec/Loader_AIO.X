@@ -103,8 +103,9 @@ void bus_rt(void) {
 						buf0.buf[6]  = 0x01;
                         //~ vek[reg_0].b[0] = buf0.buf[4];
                         //~ vek[reg_0].b[1] = buf0.buf[5];
-                        U3TXB  = buf0.buf[0]; 
-                        U3TXIE = 1;
+                        buf0.cnt = 1;
+                        U3TXB    = buf0.buf[0]; 
+                        U3TXIE   = 1;
 					}
                     //~ COMRESCTR = COMRESDEL;
 				break;	
@@ -177,7 +178,7 @@ void send_status(void) {
 	buf0.buf[45]  = 0x01;
 	vek[reg_0].b[0] = buf0.buf[43];
 	vek[reg_0].b[1] = buf0.buf[44];
-	buf0.cnt = 0;
-    U3TXIE = 1;
-	U3TXB  = buf0.buf[0]; 
+	buf0.cnt = 1;
+	U3TXB    = buf0.buf[0]; 
+    U3TXIE   = 1;
 }
