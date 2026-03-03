@@ -7,8 +7,10 @@
 
 #include <stdint.h> 
 bool rx_ready  = false,
+     upd_ready = false,
      tmr1_flag = false,
-     app_start = false;
+     app_start = false,
+     update_start = false;
      
 int main(void) {
     uint16_t zlr = 0, cnt = 0;
@@ -30,10 +32,10 @@ int main(void) {
     eep_ini();
     
     TMR1_Start();
-//    test_flash();
-//	vek[reg_1].ui = crc;
-//    page_cnt = 0;
-    
+    test_flash();
+	vek[reg_1].ui = crc;
+    page_cnt = 0;
+
     while(1) {
         if(++cnt > 1000)
             cnt = 0;
@@ -44,12 +46,8 @@ int main(void) {
 				status_req = 0;
 				send_status();
 			}
-        }
-        if (rx_ready) {
-            rx_ready = 0;
-            if(update == false)
-				bus_rt();
-			else {
+			if(upd_ready) {
+				upd_ready = 0;
 				if(!memcmp(buf0.buf, "FINISH", 6)) {
 					update  = false;
 					page_cnt = 0;
@@ -65,13 +63,16 @@ int main(void) {
 						RESET();
 					} else {	
 						SEND_BLOCK:
-						sprintf(buf0.buf, "Block %lu\r\n", page_cnt);
-						U1TXIE = 1;
+						sprintf(buf0.buf, "Block %lu\r", page_cnt);
+						senden();
 					}
-				}	
-			}	
+				}
+			}
         }
-            
+        if (rx_ready) {
+			rx_ready = 0;
+			bus_rt();
+        }
         if (zlr >= 62) { // Sekundenroutinen
             if(vek[rst_bl].ui == 0xaa55 && !crc) {
                 STARTAPP:
@@ -96,10 +97,17 @@ int main(void) {
 					goto SEND_BLOCK; // wenn Übertragung stehenblebt
 				} else if(cnt > 10)
 					RESET();
-			} else 
-            {
-//				if(cnt > 10 && !crc) // nach 10 Sek.
-//					goto STARTAPP;
+			} else {
+				//~ if(cnt > 10 && !crc) // nach 10 Sek.
+				if(vek[rst_bl].ui == 0x55aa)
+					goto STARTAPP;
+			}
+			if(update_start == true) {
+				update_start = false;
+				update       = true;
+				page_cnt = 0;
+				memset(&buf0, 0, sizeof(buf0));
+				goto SEND_BLOCK;
 			}
 		}
     }    

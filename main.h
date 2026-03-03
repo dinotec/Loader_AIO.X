@@ -16,6 +16,8 @@ extern "C" {
 //~ extern uint8_t BUSDELCTR; 
 
 extern bool tmr1_flag;
+extern bool update_start;
+
 
 
 #ifdef	__cplusplus

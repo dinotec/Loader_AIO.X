@@ -17,7 +17,7 @@ UINT vek[wrteptr + 1];
 bool update;
 
 void P20_ini() {
-    FLOAT f; 
+    //~ FLOAT f; 
     update = false;	
     //~ f.ul = FLASH_ID;  
 	//~ vek[l_adr2].b[0] =  1 + 0x20;
@@ -48,6 +48,13 @@ bool CHKWC(uint8_t val, uint8_t cmp) {
 		return 0;
 }
 
+void senden(void) {
+	buf0.cnt = 1;
+	U3TXB    = buf0.buf[0];
+	U3TXIE   = 1;
+}
+
+
 void bus_rt(void) {
 	uint8_t c, sum;
 	
@@ -67,10 +74,10 @@ void bus_rt(void) {
                 tmp.ui = sh_adr;
                 //~ eep_write(tmp, vek[sh_adr].b[0], 0);
                 memset(&buf0, 0, sizeof(buf0));
-                buf0.buf[0] = 0x0d;	
-                buf0.buf[1] = 0x01;	
-                U3TXB  = buf0.buf[0];
-                U3TXIE = 1;
+                //~ buf0.buf[0] = 0x0d;	
+                //~ U3TXB  = buf0.buf[0];
+                //~ U3TXIE = 1;
+                senden();
                 //~ COMRESCTR = COMRESDEL;
 			}
 		} else if(buf0.buf[0] == 0x09) {
@@ -100,12 +107,10 @@ void bus_rt(void) {
 						}
 						buf0.buf[4] |= 0x20;
 						buf0.buf[5]  = 0x0d;
-						buf0.buf[6]  = 0x01;
-                        //~ vek[reg_0].b[0] = buf0.buf[4];
-                        //~ vek[reg_0].b[1] = buf0.buf[5];
-                        buf0.cnt = 1;
-                        U3TXB    = buf0.buf[0]; 
-                        U3TXIE   = 1;
+                        //~ buf0.cnt = 1;
+                        //~ U3TXB    = buf0.buf[0]; 
+                        //~ U3TXIE   = 1;
+                        senden();
 					}
                     //~ COMRESCTR = COMRESDEL;
 				break;	
@@ -125,12 +130,13 @@ void bus_rt(void) {
 						vek[c].ui = wert;
 						switch(c) {
 							case rst_bl:
-								if(vek[c].ui == 0xaaaa) { // 43690
-									update = true;
-									page_cnt = 0;
-									memset(&buf0,0,sizeof(buf0));
-									sprintf(buf0.buf, "Block %lu\r\n", page_cnt);
-									goto SEND;	
+								if(vek[c].ui == START_UPDATE) { // 43690
+									update_start = true;
+									//~ update = true;
+									//~ page_cnt = 0;
+									//~ memset(&buf0,0,sizeof(buf0));
+									//~ sprintf(buf0.buf, "Block %lu\r\n", page_cnt);
+									//~ goto SEND;	
 								}
 								break;
 							default: 
@@ -139,10 +145,11 @@ void bus_rt(void) {
 						memset(&buf0,0,sizeof(buf0));
 						if(ok) {	
                             buf0.buf[0] = 0x0d;
-							buf0.buf[1] = 0x01;
+							//~ buf0.buf[1] = 0x01;
                             SEND:
-                            U3TXIE = 1;
-                            U3TXB  = buf0.buf[0]; 
+                            //~ U3TXIE = 1;
+                            //~ U3TXB  = buf0.buf[0]; 
+                            senden();
                         }
 					}
 					else
@@ -175,10 +182,8 @@ void send_status(void) {
 	buf0.buf[42] |= 0x20;
 	buf0.buf[43]  = 0x0d;
 	buf0.buf[44]  = 0x1f;
-	buf0.buf[45]  = 0x01;
-	vek[reg_0].b[0] = buf0.buf[43];
-	vek[reg_0].b[1] = buf0.buf[44];
-	buf0.cnt = 1;
-	U3TXB    = buf0.buf[0]; 
-    U3TXIE   = 1;
+	//~ buf0.cnt = 1;
+	//~ U3TXB    = buf0.buf[0]; 
+    //~ U3TXIE   = 1;
+    senden();
 }

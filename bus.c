@@ -4,13 +4,20 @@
 
 
 extern bool rx_ready;
+extern bool upd_ready;
+
 bool BUSFREE = 0;	
 
 // High-priority ISR (only for UART1 RX)
 void UART3_ReceiveISR(void) {
     uint8_t c;
     c = U3RXB;  // Read data (clears RC1IF automatically)
-    if(c > 0 && c != 0x1f) {
+    if(update == true) {
+		buf0.buf[buf0.cnt] = c;
+		if(++buf0.cnt == 0)
+			upd_ready = true;
+	} 
+	else if(c > 0 && c != 0x1f) {
         buf0.buf[buf0.cnt] = c; 
         if(buf0.buf[buf0.cnt] == 0x0d)
             rx_ready = true;
@@ -44,14 +51,15 @@ void UART3_Init(void) {
 }
 
 void UART3_TransmitISR(void) {
-    // Check if more data to send
     if (buf0.buf[buf0.cnt]) {
         U3TXB = buf0.buf[buf0.cnt];
         if (buf0.buf[++buf0.cnt] == 0) {
+            ENDE:
             U3TXIE = 0; // Disable TX interrupt
             memset(&buf0, 0, sizeof(buf0));
         }
-    } 
+    } else
+		goto ENDE;
 //    BUSFREE = 0;
 //    BUSDELCTR |= BUSDEL;
 }

@@ -9,7 +9,7 @@ void P20_ini(void);
 void ident_daten(char* ptr);
 bool CHKWC(uint8_t val, uint8_t cmp);
 void bus_rt(void);
-
+void senden(void);
 
 #endif	/* P_20_H */
 

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define FLASH_ID 0x100 //130944
+//~ #define FLASH_ID 0x100 //130944
 
 #define SBUF0_LAENGE 128
 
@@ -13,13 +13,12 @@
 #define BUSDEL	  0x02
 #define COMRESDEL 60
 
+#define START_UPDATE 0xaaaa 
+
 #define IVT_BASE  0x08
 #define APP_START 0x2000
 #define ID_START  0x08
 #define MAX_LEN_FLASH (0x1FFFF - APP_START) 
-
-#define TREN LATDbits.LATD0
-#define SEND_LED LATFbits.LATF3
 
 typedef union FLOAT {                   // byte-addressable FLOAT
   float f;
