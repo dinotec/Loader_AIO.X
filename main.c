@@ -11,9 +11,14 @@ bool rx_ready  = false,
      tmr1_flag = false,
      app_start = false,
      update_start = false;
+
+volatile __persistent uint8_t shared_flag __at(0x36ff);
+
+const char id_upd[] = "08100AIO Controller  "; // 
+
      
 int main(void) {
-    uint16_t zlr = 0, cnt = 0;
+    uint8_t zlr = 0, cnt = 0;
     #pragma config LVP = ON
     SYSTEM_Initialize();
     #pragma config LVP = ON
@@ -33,12 +38,22 @@ int main(void) {
     
     TMR1_Start();
     test_flash();
-	vek[reg_1].ui = crc;
+	vek[bl_status].b[0] = 1;
+	if(crc != 0)
+		vek[bl_status].b[0] |= 2;
+    vek[wrteptr].ui = crc; 
     page_cnt = 0;
+    if(shared_flag == 0xaa) {
+		update_start = true;
+		vek[wrteptr].ui = shared_flag; 
+		shared_flag     = 0;
+		//~ crc = 0xaa55;
+		cnt = 0;
+	}
 
     while(1) {
-        if(++cnt > 1000)
-            cnt = 0;
+        //~ if(++cnt > 1000)
+            //~ cnt = 0;
         if(tmr1_flag) {
             tmr1_flag = false;
             ++zlr;
@@ -48,16 +63,21 @@ int main(void) {
 			}
 			if(upd_ready) {
 				upd_ready = 0;
+				cnt = 0;
 				if(!memcmp(buf0.buf, "FINISH", 6)) {
 					update  = false;
 					page_cnt = 0;
 					RESET();
 				} else {
+					if(page_cnt == 0) {
+						if(memcmp(id_upd, buf0.buf + 8, 21)) {
+							RESET();
+						}
+					}
 					memcpy(flashBuffer, buf0.buf, 256);
 					FLASH_Page_write(page_cnt);
 					memset(&buf0, 0, sizeof(buf0));
 					page_cnt += 256;
-					cnt = 0;
 					if(page_cnt > (MAX_LEN_FLASH - 256)) {
 						update = false;
 						RESET();
@@ -95,17 +115,19 @@ int main(void) {
 			if(update == true) {
 				if(!(cnt % 3)) {
 					goto SEND_BLOCK; // wenn Übertragung stehenblebt
-				} else if(cnt > 10)
+				} 
+				else if(cnt > 10)
 					RESET();
 			} else {
-				//~ if(cnt > 10 && !crc) // nach 10 Sek.
-				if(vek[rst_bl].ui == 0x55aa)
+				if(cnt > 10 && !crc) // nach 10 Sek.
+				//~ if(vek[rst_bl].ui == 0x55aa)
 					goto STARTAPP;
 			}
 			if(update_start == true) {
 				update_start = false;
 				update       = true;
 				page_cnt = 0;
+				cnt      = 0;
 				memset(&buf0, 0, sizeof(buf0));
 				goto SEND_BLOCK;
 			}

@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+extern volatile __persistent uint8_t shared_flag;
+
 //~ extern uint8_t COMRESCTR;
 //~ extern uint8_t BUSDELCTR; 
 

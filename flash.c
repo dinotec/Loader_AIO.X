@@ -35,7 +35,11 @@ void test_flash(void) {
 			len.b[1] = flashBuffer[ID_START + 26];	
 			len.b[0] = flashBuffer[ID_START + 27];
 			vek[reg_2].ui = len.ui[0]; 
-			
+			//~ {
+				//~ uint8_t w;
+				//~ for(w = 8; w < 36; ++w)
+					//~ vek[w].ui = flashBuffer[w];
+			//~ }
 			if( len.ul >= MAX_LEN_FLASH) {
 				crc = 1;
 				break;
@@ -90,7 +94,7 @@ void FLASH_Page_write(uint32_t page) {
 	while (NVMCON0bits.GO); // Wait for the erase operation to complete
 	// Verify erase operation success and call the recovery function if needed
 	if (NVMCON1bits.WRERR){
-		//~ ERASE_FAULT_RECOVERY();
+		//~ ++vek[reg_err].ui; //~ ERASE_FAULT_RECOVERY();
 	}
 	// NVMADR is already pointing to target page
 	NVMCON1bits.CMD = 0x05; // Set the page write command
@@ -102,7 +106,7 @@ void FLASH_Page_write(uint32_t page) {
 	while (NVMCON0bits.GO); // Wait for the write operation to complete
 	// Verify write operation success and call the recovery function if needed
 	if (NVMCON1bits.WRERR){
-		//~ WRITE_FAULT_RECOVERY();
+		//~ ++vek[reg_err].ui; //~ WRITE_FAULT_RECOVERY();
 	}
 	INTCON0bits.GIE = GIEBitValue; // Restore interrupt enable bit value
 	NVMCON1bits.CMD = 0x00; // Disable writes to memory

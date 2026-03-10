@@ -69,14 +69,11 @@ void bus_rt(void) {
 		if(buf0.buf[0] == 0x08) {	
 			ident_daten(ident);
 			if(!memcmp(ident, buf0.buf+1,5)) {
-				vek[sh_adr].ui = buf0.buf[6];
-                UINT tmp;
-                tmp.ui = sh_adr;
+				//~ sh_adr = buf0.buf[6];
+                //~ UINT tmp;
+                //~ tmp.ui = sh_adr;
                 //~ eep_write(tmp, vek[sh_adr].b[0], 0);
                 memset(&buf0, 0, sizeof(buf0));
-                //~ buf0.buf[0] = 0x0d;	
-                //~ U3TXB  = buf0.buf[0];
-                //~ U3TXIE = 1;
                 senden();
                 //~ COMRESCTR = COMRESDEL;
 			}
@@ -92,7 +89,7 @@ void bus_rt(void) {
 				buf0.cnt = 0;
 			}
             //~ COMRESCTR = COMRESDEL;
-		} else if(buf0.buf[1] == vek[sh_adr].ui) {
+		} else if(buf0.buf[1] == sh_adr) {
 			switch(buf0.buf[0]) {
 				case 0x11: // Register auslesen
 					if(buf0.buf[2] >= 0x20) {	
@@ -107,9 +104,6 @@ void bus_rt(void) {
 						}
 						buf0.buf[4] |= 0x20;
 						buf0.buf[5]  = 0x0d;
-                        //~ buf0.cnt = 1;
-                        //~ U3TXB    = buf0.buf[0]; 
-                        //~ U3TXIE   = 1;
                         senden();
 					}
                     //~ COMRESCTR = COMRESDEL;
@@ -118,8 +112,12 @@ void bus_rt(void) {
 					if(buf0.buf[2] >= 0x20) {	
 						uint16_t wert;
 						bool ok;
-						ok = true;
+						ok = 0;
 						c = buf0.buf[2] - 0x20; // Register
+						if(c == sofver || c == type_id || c == bl_status)
+							goto SEND1;
+						ok = true;
+
 						wert = buf0.buf[3] & 0x0f;
 						wert <<= 4;
 						wert  |= buf0.buf[4] & 0x0f;
@@ -142,13 +140,11 @@ void bus_rt(void) {
 							default: 
 								break;
 						}
+						SEND1:
 						memset(&buf0,0,sizeof(buf0));
 						if(ok) {	
                             buf0.buf[0] = 0x0d;
-							//~ buf0.buf[1] = 0x01;
-                            SEND:
-                            //~ U3TXIE = 1;
-                            //~ U3TXB  = buf0.buf[0]; 
+                            //~ SEND:
                             senden();
                         }
 					}
@@ -172,7 +168,7 @@ void send_status(void) {
 	buf0.buf[1] = 0x15;
 	buf0.buf[2] = ret_adr;
 	ident_daten(buf0.buf + 3);
-	buf0.buf[8] = vek[sh_adr].b[0];
+	buf0.buf[8] = sh_adr;
 	strncat((char*)buf0.buf + 1, id + 5, 16);
 	for(n = 0; n < 16; ++n)
 		buf0.buf[25 + n] = vek[reg192 + n].b[0];// ee_rdb_8k(BK_OFFSET + n);
@@ -182,8 +178,5 @@ void send_status(void) {
 	buf0.buf[42] |= 0x20;
 	buf0.buf[43]  = 0x0d;
 	buf0.buf[44]  = 0x1f;
-	//~ buf0.cnt = 1;
-	//~ U3TXB    = buf0.buf[0]; 
-    //~ U3TXIE   = 1;
     senden();
 }

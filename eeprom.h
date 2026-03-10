@@ -15,6 +15,7 @@ extern "C" {
 uint8_t eep_read(UINT adr, bool);
 //~ bool eep_write(UINT adr, uint8_t val, bool b);
 void eep_ini(void);
+extern uint8_t sh_adr;
 
 #ifdef	__cplusplus
 }

@@ -7,7 +7,7 @@
 
 //~ #define FLASH_ID 0x100 //130944
 
-#define SBUF0_LAENGE 128
+#define SBUF0_LAENGE 256
 
 #define BUSDELMST 0x10
 #define BUSDEL	  0x02

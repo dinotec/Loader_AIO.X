@@ -4,6 +4,7 @@
 #include "enumerate.h"
 
 extern char id[];
+uint8_t sh_adr;
 
 uint8_t eep_read(UINT adr, bool b) {
     adr.ui *= 2;
@@ -68,28 +69,31 @@ bool eep_write(UINT adr, uint8_t val, bool b) {
 
 void eep_ini() {
 	UINT tmp;
+
+    memset(vek, 0, sizeof(vek[empty]));
+    
     tmp.ui = l_adr2;
     vek[l_adr2].ui =  eep_read(tmp, 0);
     tmp.ui = l_adr1;
 	vek[l_adr1].ui =  eep_read(tmp, 0);
 	tmp.ui = l_adr0;
     vek[l_adr0].ui =  eep_read(tmp, 0);
-    tmp.ui = sh_adr;
-    vek[sh_adr].ui = eep_read(tmp, 0);
-    if(vek[sh_adr].b[0] == 0xff)
-		--vek[sh_adr].ui;
+    tmp.ui = empty;
+    sh_adr = eep_read(tmp, 0);
+    if(sh_adr == 0xff)
+		sh_adr = 82;
     tmp.ui = hardware;
 	vek[hardware].b[0] = eep_read(tmp, 0);
 	vek[hardware].b[1] = eep_read(tmp, 1);
 	if(vek[hardware].ui == 0xffff)
 		vek[hardware].ui = 2601;
     vek[sofver].i = atoi(id + 21);
-   
+    vek[type_id].i = atoi(id); 
     for(uint8_t ix = 0; ix < 16; ++ix){
         tmp.ui = 192 + ix;
         vek[tmp.ui].b[0] = eep_read(tmp, 0);
-        if(vek[tmp.ui].b[0] == 0xff)
-			vek[tmp.ui].b[0] = eep_read(tmp, 0);
+        if(vek[tmp.ui].b[0] == 0)
+			vek[tmp.ui].b[0] = 0xff;
     }
    
     //~ for(uint8_t ix = 192; ix < 208; ++ix){
